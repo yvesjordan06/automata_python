@@ -69,6 +69,3 @@ class Alphabet:
             return {symbol+word for symbol in self.__alphabet for word in self.word_list(len-1)}
 
 
-a = Alphabet(1, 2, [1, 2, 3], {0, 1, 2, 3, 'a'})
-print(a)
-pass

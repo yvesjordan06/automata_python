@@ -1,5 +1,11 @@
-from Alphabet import Alphabet
-from Transition import Transition
+from models.Alphabet import Alphabet
+from models.Transition import Transition
+
+
+class Type:
+    DFA = 'Definite Finite State Automata'
+    NFA = 'Non-Definite Finite State Automata'
+    eNFA = f'Epsilon {NFA}'
 
 
 class Automata:
@@ -49,12 +55,12 @@ class Automata:
             return True
 
     def add_transition(self, transition):
-            # Add Transition Method
+        # Add Transition Method
         try:
             if isinstance(transition, Transition):
                 self.__validate_transition(transition)
                 self.__transitions.add(transition)
-            elif isinstance(transition, (tuple)):
+            elif isinstance(transition, tuple):
                 _from = str(list(transition)[0])
                 _on = str(list(transition)[1])
                 _to = str(list(transition)[2])
@@ -80,6 +86,7 @@ class Automata:
             return True
 
     def read(self, start, symbol):
+        to = list()
         try:
             if start not in self.__states:
                 raise Exception(str(start) + '  not found in Automata states')
@@ -87,26 +94,50 @@ class Automata:
                 raise Exception(str(symbol) + '  not found in Automata alphabet')
             for transition in self.__transitions:
                 if str(start) == transition.get_from() and str(symbol) == transition.get_on():
-                    return transition.get_to()
-            raise Exception('Transition from: ' + start + ' on: ' + symbol + ' does not exist in Automata')
+                    to.append(transition.get_to())
         except Exception as error:
             print('Transition Read Error:', error)
             raise Exception
+        else:
+            return to
+
     def knows_word(self, word):
-        next = self.__initial_state
+        _next = self.__initial_state
         try:
             for symbol in str(word):
-                next = self.read(next, symbol)
-            if next in self.__final_states:
+                _next = self.read(_next, symbol)
+            if _next in self.__final_states:
                 return True
             else:
                 return False
+        except:
+            return False or error
+
+    def epsilon_closure(self, symbol: str) -> set:
+        """
+        """
+        pass
+
+    def check_type(self) -> str:
+        epsilon = False
+        non_deterministic = False
+        try:
+            for transition in self.__transitions:
+                if len(self.read(transition.get_from(), transition.get_on())) > 1:
+                    non_deterministic = True
+                if not transition.get_on():
+                    epsilon = True
+                    non_deterministic = True
+                if epsilon and non_deterministic:
+                    return Type.eNFA
+            if non_deterministic:
+                return  Type.NFA
+            else:
+                return Type.DFA
         except Exception as error:
-           return False
-            
-
-
-a = Alphabet(1, 2, [1, 2, 3], {0, 1, 2, 3, 'a'})
-automata = Automata(a, ('a', 'b', 'c'), 'a', 'c', [('a', 1, 'c')])
-automata.add_transition(('f', 8, '6'))
-pass
+            print('Unknown Error:', error)
+"""
+TODO
+1- CHECK AUTOMATA TYPE (done)
+2- CONVERT TO DFA
+"""
