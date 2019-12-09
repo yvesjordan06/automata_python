@@ -123,7 +123,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
+.idea/
 .idea/304.iml
 .idea/encodings.xml
 .idea/misc.xml
