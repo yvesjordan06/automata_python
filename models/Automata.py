@@ -9,6 +9,14 @@ class Type:
     eNFA = f'Epsilon {NFA}'
 
 
+def convert_set_of_state_to_state(set_states: set):
+    state_list = list()
+    for state in set_states:
+        for character in state:
+            state_list.append(character)
+    return State(state_list)
+
+
 class Automata:
     def __init__(self, alphabet, states, initial_state, final_states, transitions):
         self.__alphabet = alphabet if isinstance(
@@ -25,7 +33,7 @@ class Automata:
         else:
             self.__initial_state = State(initial_state)
         self.__final_states = {State(final_states)} if isinstance(
-            final_states, (str, int)) else {str(x) for x in final_states}
+            final_states, (str, int)) else {State(x) for x in final_states}
         self.__transitions = set()
         print(transitions)
         if isinstance(transitions, list):
@@ -104,19 +112,19 @@ class Automata:
     def read(self, start, symbol):
         to = list()
         try:
-            if isinstance(start, set) and len(start) > 1:
+            if isinstance(start, (set, State)) and len(start) > 1:
                 for i in start:
                     for transition in self.__transitions:
                         if {i} == transition.get_from() and str(symbol) == transition.get_on():
-                            to.append(frozenset(transition.get_to()))
+                            to.append(State(transition.get_to()))
                 return to
-            if set(start) not in self.__states:
+            if State(start) not in self.__states:
                 raise Exception(str(start) + '  not found in Automata states')
             if symbol not in self.__alphabet and symbol != '':
                 raise Exception(str(symbol) + '  not found in Automata alphabet')
             for transition in self.__transitions:
                 if start == transition.get_from() and str(symbol) == transition.get_on():
-                    to.append(frozenset(transition.get_to()))
+                    to.append(State(transition.get_to()))
         except Exception as error:
             print('Transition Read Error:', error)
             raise Exception
@@ -205,6 +213,74 @@ class Automata:
                 verified_state.add(State(state))
         return Automata(self.__alphabet, verified_state, self.__initial_state, self.__final_states, list(transitions))
 
+    def minimize(self):
+        state_pairs = list()
+        marked_pairs = list()
+        temp_state = self.__states.copy()
+        for state in self.__states:
+            temp_state.remove(state)
+            for x_state in temp_state:
+                pair = {state, x_state}
+                state_pairs.append(frozenset(pair))
+
+        # Scanning pairs and marking
+
+        for pair in state_pairs:
+            if len(pair.intersection(self.__final_states)) == 1:
+                marked_pairs.append(pair)
+        a_state_has_been_marked = True
+        while a_state_has_been_marked:
+            a_state_has_been_marked = False
+            for pair in state_pairs:
+                if pair not in marked_pairs:
+                    local_pair = list(pair)
+                    for symbol in self.__alphabet.get_alphabet():
+                        result_pair = set()
+                        a = self.read(local_pair[0], symbol)
+                        b = self.read(local_pair[-1], symbol)
+                        for i in a:
+                            result_pair.add(i)
+                        for i in b:
+                            result_pair.add(i)
+                        if result_pair in marked_pairs:
+                            marked_pairs.append(pair)
+                            a_state_has_been_marked = True
+        # Generating new set of states
+        unmarked_pair = set(state_pairs).difference(set(marked_pairs))
+        used_state = set()
+        new_states = set()
+        for state in self.__states:
+            act_state = {state}
+            if state in used_state:
+                continue
+            for pair in unmarked_pair:
+                if act_state.intersection(pair):
+                    used_state.update({x for x in pair})
+                    act_state.update({x for x in pair})
+            new_states.add(convert_set_of_state_to_state(act_state))
+
+        # Generation new set of transitions
+        read_trans = list()
+        new_transitions = set()
+        for transition in self.__transitions:
+            _from = transition.get_from()
+            _to = transition.get_to()
+            _on = transition.get_on()
+            if (_from, _on) in read_trans:
+                continue
+            for state in new_states:
+                if state.intersection(_from):
+                    result = self.read(_from, _on)
+                    read_trans.append((_from, _on))
+                    for x_state in result:
+                        for i in new_states:
+                            if i.intersection(x_state):
+                                trans = Transition(state, _on, i)
+                                new_transitions.add(trans)
+        for state in new_states:
+            if state.intersection(self.__initial_state):
+                return Automata(self.__alphabet, new_states, state, self.__final_states, list(new_transitions))
+
 
 """
 TODO
@@ -219,4 +295,19 @@ if __name__ == '__main__':
                         [('a', '0', 'a'), ('a', '1', 'a'), ('a', '1', 'b'), ('b', '1', 'b'), ('b', '0', 'a')])
     automata2 = automata.convert_to_dfa()
 
-    automata
+    automata3 = Automata(['1', '0'], ['A', 'B', 'C', 'D', 'E', 'F'], 'A', ['C', 'D', 'E'],
+                         [
+                             ('A', 0, 'B'),
+                             ('A', 1, 'C'),
+                             ('B', 0, 'A'),
+                             ('B', 1, 'D'),
+                             ('C', 0, 'E'),
+                             ('C', 1, 'F'),
+                             ('D', 0, 'E'),
+                             ('D', 1, 'F'),
+                             ('E', 0, 'E'),
+                             ('E', 1, 'F'),
+                             ('F', 0, 'F'),
+                             ('F', 1, 'F'),
+                         ]
+                         )

@@ -3,7 +3,7 @@ from models.State import State
 
 class Transition:
     def __init__(self, _from, _on, _to=None):
-        self.__from = set(str(_from)) if isinstance(_from, (str, int)) else set(_from)
+        self.__from = State(str(_from)) if isinstance(_from, (str, int)) else State(_from)
         if _to is None:
             self.__to = None
         elif isinstance(_to, (str, int)):
@@ -21,13 +21,13 @@ class Transition:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-    def get_from(self):
+    def get_from(self) -> State:
         return self.__from
 
-    def get_to(self):
+    def get_to(self) -> State:
         return self.__to
 
-    def get_on(self):
+    def get_on(self) -> str:
         return self.__on
 
     def get_transition(self):
