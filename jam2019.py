@@ -28,7 +28,7 @@ for case in cases_list:
 
 class Mase:
     def __init__(self, size):
-        this.__size = size
+        self.__size = size
    
     def validate_path(self, _path):
         path = [str(x) for x in _path]

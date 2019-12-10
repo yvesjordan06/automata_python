@@ -1,5 +1,6 @@
 from models.Alphabet import Alphabet
 from models.Transition import Transition
+from models.State import State
 
 
 class Type:
@@ -15,15 +16,15 @@ class Automata:
         self.__states = set()
         for x in states:
             if isinstance(x, (str, int)):
-                self.__states.add(frozenset(str(x)))
+                self.__states.add(State(str(x)))
             elif isinstance(x, (set, list, tuple, frozenset)):
-                self.__states.add(frozenset(x))
+                self.__states.add(State(x))
 
         if isinstance(initial_state, (str, int)):
-            self.__initial_state = set(str(initial_state))
+            self.__initial_state = State(str(initial_state))
         else:
-            self.__initial_state = set(initial_state)
-        self.__final_states = {str(final_states)} if isinstance(
+            self.__initial_state = State(initial_state)
+        self.__final_states = {State(final_states)} if isinstance(
             final_states, (str, int)) else {str(x) for x in final_states}
         self.__transitions = set()
         print(transitions)
@@ -139,9 +140,9 @@ class Automata:
         closure = list()
         verified_closure = list()
         if isinstance(state, (str, int)):
-            state = {str(_state)}
+            state = State(str(_state))
         else:
-            state = set(_state)
+            state = State(_state)
         closure.append(state)
         for iter_state in closure:
             if iter_state in verified_closure:
@@ -157,8 +158,8 @@ class Automata:
                 except Exception as error:
                     print("line 153", error)
                 if read:
-                    closure.append(set(read))
-            verified_closure.append(frozenset(iter_state))
+                    closure.append(State(read))
+            verified_closure.append(State(iter_state))
         return set(verified_closure)
 
     def check_type(self) -> str:
@@ -201,7 +202,7 @@ class Automata:
                     states.append(_actual_state)
                     actual_transition = Transition(state, symbol, _actual_state)
                     transitions.add(actual_transition)
-                verified_state.add(frozenset(state))
+                verified_state.add(State(state))
         return Automata(self.__alphabet, verified_state, self.__initial_state, self.__final_states, list(transitions))
 
 

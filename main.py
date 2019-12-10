@@ -2,6 +2,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
+from models.Automata import Automata
 
 
 if __name__ == '__main__':
@@ -9,13 +10,14 @@ if __name__ == '__main__':
     styleSheetStr = str(open('style.qss', "r").read())
     app.setStyleSheet(styleSheetStr)
     from views.app import App
+
     ex = App()
     sys.exit(app.exec_())
     # print('Welcome to 304'.capitalize().center(10, '#'))
     # size = int(input('What is the length of the alphabet : '))
     # local_alphabet = []
     # for i in range(size):
-    #     local_alphabet.append(input('Enter alphabet : '))
+    #     local_alphabet.append(input('Enter an alphabet : '))
     # alphabet = Alphabet(local_alphabet)
     # size = int(input('What is the length of all states : '))
     # states = []

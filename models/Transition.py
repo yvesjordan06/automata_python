@@ -1,12 +1,15 @@
+from models.State import State
+
+
 class Transition:
     def __init__(self, _from, _on, _to=None):
         self.__from = set(str(_from)) if isinstance(_from, (str, int)) else set(_from)
         if _to is None:
             self.__to = None
         elif isinstance(_to, (str, int)):
-            self.__to = set(str(_to))
+            self.__to = State(str(_to))
         else:
-            self.__to = set(_to)
+            self.__to = State(_to)
         self.__on = str(_on)
 
     def __repr__(self):
@@ -33,5 +36,3 @@ class Transition:
     def __str__(self):
         return "from: " + ''.join(self.__from) + " , " + "on: " + self.__on + " , " + "to: " + ''.join(self.__to)
 
-
-pass
