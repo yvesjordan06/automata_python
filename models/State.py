@@ -6,3 +6,6 @@ class State(frozenset):
             object: 
         """
         super(State, self).__init__()
+
+    def to_string(self):
+        return ''.join(self)

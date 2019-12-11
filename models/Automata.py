@@ -1,6 +1,8 @@
+from graphviz import Digraph
+
 from models.Alphabet import Alphabet
-from models.Transition import Transition
 from models.State import State
+from models.Transition import Transition
 
 
 class Type:
@@ -305,6 +307,22 @@ class Automata:
                                 new_transitions.add(trans)
 
         return Automata(self.__alphabet, new_states, new_initial_state, new_final_states, list(new_transitions))
+
+    def view(self):
+        f = Digraph('Test', filename='./diagrams/automate', format='png')
+        f.attr(label=self.check_type())
+        f.comment = 'merci'
+        f.attr(rankdir='LR', size='8,5')
+        f.attr('node', shape='none')
+        f.node('')
+        f.attr('node', shape='doublecircle')
+        for x in self.__final_states:
+            f.node(x.to_string())
+        f.attr('node', shape='circle')
+        f.edge('', self.__initial_state.to_string(), label='start')
+        for t in self.__transitions:
+            f.edge(t.get_from().to_string(), t.get_to().to_string(), label=t.get_on())
+        return f.view()
 
 
 """
