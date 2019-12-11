@@ -3,13 +3,13 @@ from models.State import State
 
 class Transition:
     def __init__(self, _from, _on, _to=None):
-        self.__from = State(str(_from)) if isinstance(_from, (str, int)) else State(_from)
+        self.__from = State({str(_from)}) if isinstance(_from, (str, int)) else State({''.join(_from)})
         if _to is None:
             self.__to = None
         elif isinstance(_to, (str, int)):
-            self.__to = State(str(_to))
+            self.__to = State({str(_to)})
         else:
-            self.__to = State(_to)
+            self.__to = State({''.join(_to)})
         self.__on = str(_on)
 
     def __repr__(self):

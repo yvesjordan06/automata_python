@@ -24,16 +24,23 @@ class Automata:
         self.__states = set()
         for x in states:
             if isinstance(x, (str, int)):
-                self.__states.add(State(str(x)))
-            elif isinstance(x, (set, list, tuple, frozenset)):
-                self.__states.add(State(x))
+                self.__states.add(State({str(x)}))
+            elif isinstance(x, (set, list, tuple, frozenset, State)):
+                self.__states.add(State({''.join(x)}))
 
         if isinstance(initial_state, (str, int)):
-            self.__initial_state = State(str(initial_state))
+            self.__initial_state = State({str(initial_state)})
         else:
-            self.__initial_state = State(initial_state)
-        self.__final_states = {State(final_states)} if isinstance(
-            final_states, (str, int)) else {State(x) for x in final_states}
+            self.__initial_state = State({''.join(initial_state)})
+        self.__final_states = set()
+        if isinstance(final_states, (str, int)):
+            self.__final_states.add(State({str(final_states)}))
+        else:
+            for state in final_states:
+                if isinstance(state, (str, int)):
+                    self.__final_states.add(State({str(state)}))
+                else:
+                    self.__final_states.add(State({''.join(state)}))
         self.__transitions = set()
         print(transitions)
         if isinstance(transitions, list):
@@ -109,22 +116,23 @@ class Automata:
         else:
             return True
 
-    def read(self, start, symbol):
+    def read(self, _start, symbol):
         to = list()
+        start = State(_start) if isinstance(_start, (State, tuple, set)) else State({str(_start)})
         try:
             if isinstance(start, (set, State)) and len(start) > 1:
                 for i in start:
                     for transition in self.__transitions:
                         if {i} == transition.get_from() and str(symbol) == transition.get_on():
-                            to.append(State(transition.get_to()))
+                            to.append(transition.get_to())
                 return to
-            if State(start) not in self.__states:
+            if start not in self.__states:
                 raise Exception(str(start) + '  not found in Automata states')
             if symbol not in self.__alphabet and symbol != '':
                 raise Exception(str(symbol) + '  not found in Automata alphabet')
             for transition in self.__transitions:
                 if start == transition.get_from() and str(symbol) == transition.get_on():
-                    to.append(State(transition.get_to()))
+                    to.append(transition.get_to())
         except Exception as error:
             print('Transition Read Error:', error)
             raise Exception
@@ -192,6 +200,7 @@ class Automata:
     def convert_to_dfa(self):
         automata_type = self.check_type()
         states = [self.__initial_state]
+        new_final_states = set()
         transitions = set()
         verified_state = set()
         print(automata_type)
@@ -206,14 +215,22 @@ class Automata:
                         actual_state = self.read(state, symbol)
                     except:
                         actual_state = set()
-                    _actual_state = {''.join(final) for final in actual_state}
+                    _actual_state = State({''.join(final) for final in actual_state})
                     states.append(_actual_state)
                     actual_transition = Transition(state, symbol, _actual_state)
                     transitions.add(actual_transition)
                 verified_state.add(State(state))
-        return Automata(self.__alphabet, verified_state, self.__initial_state, self.__final_states, list(transitions))
+
+                for x_state in verified_state:
+                    for f_state in self.__final_states:
+                        if f_state.intersection(x_state):
+                            new_final_states.add(x_state)
+
+        return Automata(self.__alphabet, verified_state, self.__initial_state, new_final_states, list(transitions))
 
     def minimize(self):
+        if self.check_type() != Type.DFA:
+            return self.convert_to_dfa().minimize()
         state_pairs = list()
         marked_pairs = list()
         temp_state = self.__states.copy()
@@ -262,6 +279,15 @@ class Automata:
         # Generation new set of transitions
         read_trans = list()
         new_transitions = set()
+        new_initial_state = set()
+        new_final_states = set()
+        for state in new_states:
+            if state.intersection(self.__initial_state):
+                new_initial_state = state
+            for f_state in self.__final_states:
+                if f_state.intersection(state):
+                    new_final_states.add(state)
+
         for transition in self.__transitions:
             _from = transition.get_from()
             _to = transition.get_to()
@@ -277,9 +303,8 @@ class Automata:
                             if i.intersection(x_state):
                                 trans = Transition(state, _on, i)
                                 new_transitions.add(trans)
-        for state in new_states:
-            if state.intersection(self.__initial_state):
-                return Automata(self.__alphabet, new_states, state, self.__final_states, list(new_transitions))
+
+        return Automata(self.__alphabet, new_states, new_initial_state, new_final_states, list(new_transitions))
 
 
 """
@@ -311,3 +336,20 @@ if __name__ == '__main__':
                              ('F', 1, 'F'),
                          ]
                          )
+    b = automata.convert_to_dfa()
+
+    automata4 = Automata(['0', '1'], ['q0', 'q1', 'q2', 'q3', 'q4'], 'q0', ['q4'],
+                         [
+                             ('q0', '0', 'q1'),
+                             ('q0', '1', 'q3'),
+                             ('q1', '0', 'q2'),
+                             ('q1', '1', 'q4'),
+                             ('q2', '0', 'q1'),
+                             ('q2', '1', 'q4'),
+                             ('q3', '0', 'q2'),
+                             ('q3', '1', 'q4'),
+                             ('q4', '0', 'q4'),
+                             ('q4', '1', 'q4')
+                         ]
+                         )
+    four_min = automata4.minimize()
