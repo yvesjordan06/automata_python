@@ -16,16 +16,14 @@ import sys
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
-from .components.index import HToolBar
-from .Pages.index import HWindows
+from .Components.__init__ import HToolBar
+from .Pages.__init__ import HWindows
 
 
-class App(QMainWindow):
+class MainApp(QApplication):
 
-    def __init__(self):
-        super().__init__()
-
-        # Register Tool Bars
+    def __init__(self, flags=None, *args, **kwargs):
+        super().__init__(flags, *args, **kwargs)
         self.addToolBar(HToolBar('Toolbar 1', self))
 
         # Central Widget
@@ -40,7 +38,6 @@ class App(QMainWindow):
         self.init_UI()
 
     def init_UI(self):
-
         """initiates application UI"""
         self.resize(600, 380)
         self.center()

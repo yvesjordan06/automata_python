@@ -4,6 +4,7 @@ from models.Alphabet import Alphabet
 from models.State import State
 from models.Transition import Transition
 
+import time
 
 class Type:
     DFA = 'Definite Finite State Automata'
@@ -308,18 +309,17 @@ class Automata:
 
         return Automata(self.__alphabet, new_states, new_initial_state, new_final_states, list(new_transitions))
 
-    def view(self):
-        f = Digraph('Test', filename='./diagrams/automate', format='png')
-        f.attr(label=self.check_type())
-        f.comment = 'merci'
-        f.attr(rankdir='LR', size='8,5')
-        f.attr('node', shape='none')
+    def view(self, title=None):
+        f = Digraph('Test', filename=f'../diagrams/automate{time.time()}', format='svg')
+        f.attr(label=title or self.check_type())
+        f.attr(rankdir='LR', size='15,5')
+        f.attr('node', shape='none', height='0', width='0')
         f.node('')
         f.attr('node', shape='doublecircle')
         for x in self.__final_states:
             f.node(x.to_string())
         f.attr('node', shape='circle')
-        f.edge('', self.__initial_state.to_string(), label='start')
+        f.edge('', self.__initial_state.to_string())
         for t in self.__transitions:
             f.edge(t.get_from().to_string(), t.get_to().to_string(), label=t.get_on())
         return f.view()
@@ -370,4 +370,22 @@ if __name__ == '__main__':
                              ('q4', '1', 'q4')
                          ]
                          )
+    automata5 = Automata(['0', '1'], ['q0', 'q1', 'q2', 'q3', 'q4', 'q5'], 'q0', ['q3', 'q4'],
+                         [
+                             ('q0', '0', 'q1'),
+                             ('q0', '1', 'q2'),
+                             ('q1', '0', 'q2'),
+                             ('q1', '1', 'q3'),
+                             ('q2', '0', 'q2'),
+                             ('q2', '1', 'q4'),
+                             ('q3', '0', 'q3'),
+                             ('q3', '1', 'q3'),
+                             ('q4', '0', 'q4'),
+                             ('q4', '1', 'q4'),
+                             ('q5', '0', 'q5'),
+                             ('q5', '1', 'q4')
+                         ]
+                         )
+    automata5.view('Automata 5 Minized')
+    automata5.minimize().view('Automata 5')
     four_min = automata4.minimize()

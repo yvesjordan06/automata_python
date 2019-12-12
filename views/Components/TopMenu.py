@@ -3,7 +3,7 @@ import functools
 from PyQt5.QtGui import QIcon, QTextLine
 from PyQt5.QtWidgets import QWidget, QAction, QMainWindow, QToolBar, QMenuBar
 
-from ..Pages.index import HHelpWindow
+from ..Pages import HHelpWindow
 
 
 class HToolBar(QToolBar):
