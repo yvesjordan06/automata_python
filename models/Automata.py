@@ -1,10 +1,11 @@
+import time
+
 from graphviz import Digraph
 
 from models.Alphabet import Alphabet
 from models.State import State
 from models.Transition import Transition
 
-import time
 
 class Type:
     DFA = 'Definite Finite State Automata'
@@ -386,6 +387,47 @@ if __name__ == '__main__':
                              ('q5', '1', 'q4')
                          ]
                          )
-    automata5.view('Automata 5 Minized')
-    automata5.minimize().view('Automata 5')
+    automata6 = Automata(['a', 'b'], ['1', '2', '3', '4'], '1', ['4'],
+                         [
+                             ('1', 'a', '3'),
+                             ('1', 'a', '2'),
+                             ('2', 'a', '4'),
+                             ('3', 'a', '3'),
+                             ('3', 'b', '4'),
+                             ('4', 'b', '2'),
+                         ]
+                         )
+
+    automata7 = Automata(['0', '1'], ['q0', 'q1', 'q2', 'q3', 'q4'], 'q0', ['q4'],
+                         [
+                             ('q0', '0', 'q1'),
+                             ('q0', '0', 'q0'),
+                             ('q0', '1', 'q0'),
+                             ('q1', '0', 'q2'),
+                             ('q1', '1', 'q2'),
+                             ('q2', '0', 'q3'),
+                             ('q2', '1', 'q3'),
+                             ('q3', '0', 'q4'),
+                             ('q3', '1', 'q4'),
+                         ]
+                         )
+
+    automata8 = Automata(['a', 'b'], ['q0', 'q1', 'q2', 'q3', 'q4', 'q5'], 'q0', ['q5'],
+                         [
+                             ('q0', 'a', 'q1'),
+                             ('q0', 'b', 'q3'),
+                             ('q1', 'a', 'q1'),
+                             ('q1', 'b', 'q2'),
+                             ('q2', 'a', 'q2'),
+                             ('q2', 'b', 'q5'),
+                             ('q3', 'a', 'q3'),
+                             ('q3', 'b', 'q4'),
+                             ('q4', 'a', 'q4'),
+                             ('q4', 'b', 'q5'),
+                             ('q5', 'a', 'q5'),
+                             ('q5', 'b', 'q5')
+                         ]
+                         )
+    automata8.view('AFD')
+    automata8.minimize().view('Min AFD')
     four_min = automata4.minimize()

@@ -1,10 +1,4 @@
-from views import Components
-from views import Pages
-
-
-def main():
-    print('Hello World')
-
+from views import start_app
 
 if __name__ == '__main__':
-    main()
+    start_app()

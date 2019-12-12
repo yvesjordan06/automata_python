@@ -11,53 +11,92 @@ email: yvesjordan06@gmail.com
 Last edited: December 2019
 """
 
-import random
-import sys
-
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
-from .Components.__init__ import HToolBar
-from .Pages.__init__ import HWindows
+
+from views import Pages
+from views.Components import HErrorDialog, HAction
 
 
-class MainApp(QApplication):
+class MainWindow(QMainWindow):
 
     def __init__(self, flags=None, *args, **kwargs):
         super().__init__(flags, *args, **kwargs)
-        self.addToolBar(HToolBar('Toolbar 1', self))
 
-        # Central Widget
-        self.central_widget = QStackedWidget()
-        self.setCentralWidget(self.central_widget)
+        self.AppPages = {
+            'main': Pages.HMainWindow(),
+            'help': Pages.HHelpWindow()
+        }
 
-        # Register Windows Here
-        self.used_pages = [
-            HWindows.Main,
-            HWindows.Help
-        ]
-        self.init_UI()
+        self.AppActions = {
+            'new': HAction(
+                name='New',
+                shortcut='Ctrl+N',
+                status_tip='Create a new automata',
+                slot=[self.change_page, 'main']
+            ),
+            'exit': HAction(
+                name='Exit',
+                shortcut='Ctrl+Q',
+                status_tip='Quit Application',
+                slot=self.close,
+                icon=QIcon('icons/exit.png')
+            ),
+            'help': HAction(
+                name='About',
+                shortcut='Ctrl+F1',
+                slot=[self.change_page, 'help']
+            )
+        }
 
-    def init_UI(self):
-        """initiates application UI"""
-        self.resize(600, 380)
-        self.center()
-        self.setWindowTitle('Automata 304')
-        self.show()
-        self.__register_window()
-        self.setMainWindow(HWindows.Main)
-        self.statusBar().showMessage('Ready')
+        self.windows = list()
+        self.stack = QStackedWidget()
+        try:
+            self.title = kwargs['title']
+        except KeyError:
+            self.title = 'Hiro Automata'
 
-    def center(self):
-        """centers the window on the screen"""
+        self.create_menu()
+        # Initialise et Demarre la vue
+        self.initUI()
 
-        screen = QDesktopWidget().screenGeometry()
-        size = self.geometry()
-        self.move((screen.width() - size.width()) / 2,
-                  (screen.height() - size.height()) / 2)
+    def initUI(self):
+        self.register_pages()
 
-    def setMainWindow(self, window):
-        self.central_widget.setCurrentWidget(window)
+        self.setWindowTitle(self.title)
+        self.statusBar().showMessage('Prêt')
+        self.resize(600, 600)
+        self.setCentralWidget(self.stack)
 
-    def __register_window(self):
-        for window in self.used_pages:
-            self.central_widget.addWidget(window)
+    def register_pages(self):
+        for name, page in self.AppPages.items():
+            self.stack.addWidget(page)
+
+    def change_page(self, page):
+        try:
+            self.stack.setCurrentWidget(self.AppPages[page])
+        except KeyError:
+            HErrorDialog('Page Not Found', f'The page {page} is not found', 'Did you register the page ?').exec()
+
+    def create_menu(self):
+
+        mainMenu = self.menuBar()
+        # Sub menu
+        fileMenu = mainMenu.addMenu('&File')
+        helpMenu = mainMenu.addMenu('&Help')
+
+        # Actions to sub Menu
+        fileMenu.addAction(self.AppActions['new'])
+        fileMenu.addAction(self.AppActions['exit'])
+        helpMenu.addAction(self.AppActions['help'])
+
+
+def start_app():
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec()
+
+
+if __name__ == '__main__':
+    start_app()
