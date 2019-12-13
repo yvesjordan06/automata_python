@@ -22,48 +22,75 @@ def convert_set_of_state_to_state(set_states: set):
 
 
 class Automata:
-    def __init__(self, alphabet, states, initial_state, final_states, transitions):
-        self.__alphabet = alphabet if isinstance(
-            alphabet, Alphabet) else Alphabet(alphabet)
+    def __init__(self, name='Automata', alphabet=None, states=None, initial_state=None, final_states=None,
+                 transitions=None):
+        self.name = name
+        self.__alphabet = Alphabet('')
         self.__states = set()
-        for x in states:
-            if isinstance(x, (str, int)):
-                self.__states.add(State({str(x)}))
-            elif isinstance(x, (set, list, tuple, frozenset, State)):
-                self.__states.add(State({''.join(x)}))
-
-        if isinstance(initial_state, (str, int)):
-            self.__initial_state = State({str(initial_state)})
-        else:
-            self.__initial_state = State({''.join(initial_state)})
+        self.__initial_state = None
         self.__final_states = set()
-        if isinstance(final_states, (str, int)):
-            self.__final_states.add(State({str(final_states)}))
-        else:
-            for state in final_states:
-                if isinstance(state, (str, int)):
-                    self.__final_states.add(State({str(state)}))
-                else:
-                    self.__final_states.add(State({''.join(state)}))
         self.__transitions = set()
-        print(transitions)
-        if isinstance(transitions, list):
-            for trans in transitions:
-                self.add_transition(trans)
-        else:
-            self.add_transition(transitions)
+        if alphabet:
+            self.__alphabet = alphabet if isinstance(
+                alphabet, Alphabet) else Alphabet(alphabet)
+            for x in states:
+                if isinstance(x, (str, int)):
+                    self.__states.add(State({str(x)}))
+                elif isinstance(x, (set, list, tuple, frozenset, State)):
+                    self.__states.add(State({''.join(x)}))
+        if initial_state:
+            if isinstance(initial_state, (str, int)):
+                self.__initial_state = State({str(initial_state)})
+            else:
+                self.__initial_state = State({''.join(initial_state)})
+        if final_states:
+            if isinstance(final_states, (str, int)):
+                self.__final_states.add(State({str(final_states)}))
+            else:
+                for state in final_states:
+                    if isinstance(state, (str, int)):
+                        self.__final_states.add(State({str(state)}))
+                    else:
+                        self.__final_states.add(State({''.join(state)}))
+        if transitions:
+            if isinstance(transitions, list):
+                for trans in transitions:
+                    self.add_transition(trans)
+            else:
+                self.add_transition(transitions)
 
     def get_alphabet(self):
         return self.__alphabet
 
+    def add_symbol(self, symbol):
+        if self.__alphabet:
+            self.__alphabet.add_symbol(symbol)
+        else:
+            self.__alphabet = Alphabet(symbol)
+
     def get_states(self):
         return self.__states
+
+    def get_states_string(self):
+        string = set()
+        for state in self.__states:
+            string.add(''.join(state))
+        return string
 
     def get_initial_state(self):
         return self.__initial_state
 
     def get_final_states(self):
         return self.__final_states
+
+    def get_initial_state_string(self):
+        return ''.join(self.__initial_state)
+
+    def get_final_states_string(self):
+        string = set()
+        for state in self.__final_states:
+            string.add(''.join(state))
+        return string
 
     def get_transitions(self):
         return self.__transitions
@@ -103,6 +130,64 @@ class Automata:
                     'Cannot read transition expected format \n Expected Format (from, on, to)')
         except Exception as error:
             print('Transition Error:', error)
+
+    def delete_transition(self, transition: Transition):
+        if not isinstance(transition, Transition):
+            raise TypeError(f'type Transition expected but got {type(transition)}')
+        try:
+            self.__transitions.remove(transition)
+        except KeyError:
+            raise KeyError(f'Transition {str(transition)} not found')
+
+    def add_state(self, state):
+        local_state = set()
+        if isinstance(state, (State, set, frozenset, list, tuple)):
+            local_state = State(state)
+        else:
+            local_state = State({str(state)})
+        self.__states.add(local_state)
+
+    def remove_state(self, state):
+        local_state = set()
+        if isinstance(state, (State, set, frozenset, list, tuple)):
+            local_state = State(state)
+        else:
+            local_state = State({str(state)})
+        try:
+            self.__states.remove(local_state)
+        except KeyError:
+            raise KeyError(f'State {local_state} not found')
+
+    def set_initial_state(self, state):
+        local_state = set()
+        if isinstance(state, (State, set, frozenset, list, tuple)):
+            local_state = State(state)
+        else:
+            local_state = State({str(state)})
+        if local_state not in self.__states:
+            raise ValueError(f'Cannot set state {local_state} as initial state: State not found in Automata states')
+        self.__initial_state = local_state
+
+    def add_final_state(self, state):
+        local_state = set()
+        if isinstance(state, (State, set, frozenset, list, tuple)):
+            local_state = State(state)
+        else:
+            local_state = State({str(state)})
+        if local_state not in self.__states:
+            raise ValueError(f'Cannot set state {local_state} as final state: State not found in Automata states')
+        self.__final_states.add(local_state)
+
+    def remove_final_state(self, state):
+        local_state = set()
+        if isinstance(state, (State, set, frozenset, list, tuple)):
+            local_state = State(state)
+        else:
+            local_state = State({str(state)})
+        try:
+            self.__final_states.remove(local_state)
+        except KeyError:
+            raise KeyError(f'State {local_state} not found')
 
     def __validate_transition(self, transition):
         try:
@@ -310,9 +395,10 @@ class Automata:
 
         return Automata(self.__alphabet, new_states, new_initial_state, new_final_states, list(new_transitions))
 
-    def view(self, title=None):
+    def view(self):
         f = Digraph('Test', filename=f'../diagrams/automate{time.time()}', format='svg')
-        f.attr(label=title or self.check_type())
+        f.attr(label=self.name)
+        f.attr(label=f'Type: {self.check_type()}')
         f.attr(rankdir='LR', size='15,5')
         f.attr('node', shape='none', height='0', width='0')
         f.node('')
@@ -332,6 +418,22 @@ TODO
 2- CONVERT TO DFA
 """
 
+example = Automata(['a', 'b'], ['q0', 'q1', 'q2', 'q3', 'q4', 'q5'], 'q0', ['q5'],
+                   [
+                       ('q0', 'a', 'q1'),
+                       ('q0', 'b', 'q3'),
+                       ('q1', 'a', 'q1'),
+                       ('q1', 'b', 'q2'),
+                       ('q2', 'a', 'q2'),
+                       ('q2', 'b', 'q5'),
+                       ('q3', 'a', 'q3'),
+                       ('q3', 'b', 'q4'),
+                       ('q4', 'a', 'q4'),
+                       ('q4', 'b', 'q5'),
+                       ('q5', 'a', 'q5'),
+                       ('q5', 'b', 'q5')
+                   ]
+                   )
 if __name__ == '__main__':
     automata = Automata(['1', '0'], ['a', 'b'], 'a', ['b'],
                         [('a', '0', 'a'), ('a', '1', 'b'), ('b', '1', 'b'), ('b', '0', 'a')])

@@ -7,6 +7,19 @@ class Alphabet:
             else:
                 self.__alphabet = self.__alphabet.union({str(arg)})
 
+    def add_symbol(self, symbol):
+        if not isinstance(symbol, (str, int)):
+            raise TypeError(f'type str expected got {type(symbol)}')
+        self.__alphabet.add(str(symbol))
+
+    def remove_symbol(self, symbol):
+        if not isinstance(symbol, (str, int)):
+            raise TypeError(f'type str expected got {type(symbol)}')
+        try:
+            self.__alphabet.remove(str(symbol))
+        except KeyError:
+            raise KeyError(f'{symbol} not found in alphabet')
+
     def __str__(self):
         """Retourne un representation de l'alphabet en chaine de character
                         Utilisation

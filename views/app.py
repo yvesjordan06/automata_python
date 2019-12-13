@@ -18,6 +18,11 @@ from views import Pages
 from views.Components import HErrorDialog, HAction
 
 
+def show_automata():
+    a = Pages.HCreateAutomata()
+    a.exec()
+
+
 class MainWindow(QMainWindow):
 
     def __init__(self, flags=None, *args, **kwargs):
@@ -25,16 +30,11 @@ class MainWindow(QMainWindow):
 
         self.AppPages = {
             'main': Pages.HMainWindow(),
-            'help': Pages.HHelpWindow()
+            'help': Pages.HHelpWindow(),
+            'new': Pages.HCreateAutomata()
         }
 
         self.AppActions = {
-            'new': HAction(
-                name='New',
-                shortcut='Ctrl+N',
-                status_tip='Create a new automata',
-                slot=[self.change_page, 'main']
-            ),
             'exit': HAction(
                 name='Exit',
                 shortcut='Ctrl+Q',
@@ -46,6 +46,12 @@ class MainWindow(QMainWindow):
                 name='About',
                 shortcut='Ctrl+F1',
                 slot=[self.change_page, 'help']
+            ),
+            'new': HAction(
+                name='New',
+                shortcut='Ctrl+N',
+                slot=[self.change_page, 'new'],
+                status_tip='Create a new Automata'
             )
         }
 
@@ -57,6 +63,7 @@ class MainWindow(QMainWindow):
             self.title = 'Hiro Automata'
 
         self.create_menu()
+
         # Initialise et Demarre la vue
         self.initUI()
 
@@ -65,7 +72,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.statusBar().showMessage('Prêt')
-        self.resize(600, 600)
+        self.resize(400, 400)
         self.setCentralWidget(self.stack)
 
     def register_pages(self):
@@ -75,6 +82,12 @@ class MainWindow(QMainWindow):
     def change_page(self, page):
         try:
             self.stack.setCurrentWidget(self.AppPages[page])
+        except KeyError:
+            HErrorDialog('Page Not Found', f'The page {page} is not found', 'Did you register the page ?').exec()
+
+    def pop_page(self, page):
+        try:
+            self.AppPages[page].exec()
         except KeyError:
             HErrorDialog('Page Not Found', f'The page {page} is not found', 'Did you register the page ?').exec()
 
