@@ -11,7 +11,7 @@ class HAddAutomata(QWidget):
         layout = QVBoxLayout()
         group = QGroupBox()
         label = QLabel("Create Automata")
-        group.setTitle('Automata')
+        label.setStyleSheet('font-weight: 600; margin-bottom: 10px')
         layout.addWidget(label, alignment=Qt.AlignCenter)
         layout.addWidget(Components.HAddAlphabet(automata))
         layout.addWidget(Components.HAddState(automata))

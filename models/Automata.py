@@ -1,5 +1,6 @@
 import time
 
+from PyQt5.QtCore import pyqtSignal, QObject
 from graphviz import Digraph
 
 from models.Alphabet import Alphabet
@@ -21,15 +22,20 @@ def convert_set_of_state_to_state(set_states: set):
     return State(state_list)
 
 
-class Automata:
-    def __init__(self, name='Automata', alphabet=None, states=None, initial_state=None, final_states=None,
-                 transitions=None):
-        self.name = name
+class Automata(QObject):
+    updated = pyqtSignal()
+
+    def __init__(self, alphabet=None, states=None, initial_state=None, final_states=None,
+                 transitions=None, **kwargs):
+        super().__init__()
+        kwargs.setdefault('name', 'Automata')
+        self.name = kwargs['name']
         self.__alphabet = Alphabet('')
         self.__states = set()
         self.__initial_state = None
         self.__final_states = set()
         self.__transitions = set()
+
         if alphabet:
             self.__alphabet = alphabet if isinstance(
                 alphabet, Alphabet) else Alphabet(alphabet)
@@ -67,6 +73,7 @@ class Automata:
             self.__alphabet.add_symbol(symbol)
         else:
             self.__alphabet = Alphabet(symbol)
+        self.updated.emit()
 
     def get_states(self):
         return self.__states
@@ -84,7 +91,7 @@ class Automata:
         return self.__final_states
 
     def get_initial_state_string(self):
-        return ''.join(self.__initial_state)
+        return ''.join(self.__initial_state) if self.__initial_state else None
 
     def get_final_states_string(self):
         string = set()
@@ -118,6 +125,7 @@ class Automata:
             if isinstance(transition, Transition):
                 self.__validate_transition(transition)
                 self.__transitions.add(transition)
+                self.updated.emit()
             elif isinstance(transition, tuple):
                 _from = str(list(transition)[0])
                 _on = str(list(transition)[1])
@@ -125,6 +133,7 @@ class Automata:
                 new_trans = Transition(_from, _on, _to)
                 self.__validate_transition(new_trans)
                 self.__transitions.add(new_trans)
+                self.updated.emit()
             else:
                 raise Exception(
                     'Cannot read transition expected format \n Expected Format (from, on, to)')
@@ -146,6 +155,7 @@ class Automata:
         else:
             local_state = State({str(state)})
         self.__states.add(local_state)
+        self.updated.emit()
 
     def remove_state(self, state):
         local_state = set()
@@ -155,6 +165,7 @@ class Automata:
             local_state = State({str(state)})
         try:
             self.__states.remove(local_state)
+            self.updated.emit()
         except KeyError:
             raise KeyError(f'State {local_state} not found')
 
@@ -167,6 +178,7 @@ class Automata:
         if local_state not in self.__states:
             raise ValueError(f'Cannot set state {local_state} as initial state: State not found in Automata states')
         self.__initial_state = local_state
+        self.updated.emit()
 
     def add_final_state(self, state):
         local_state = set()
@@ -177,6 +189,7 @@ class Automata:
         if local_state not in self.__states:
             raise ValueError(f'Cannot set state {local_state} as final state: State not found in Automata states')
         self.__final_states.add(local_state)
+        self.updated.emit()
 
     def remove_final_state(self, state):
         local_state = set()
@@ -186,6 +199,7 @@ class Automata:
             local_state = State({str(state)})
         try:
             self.__final_states.remove(local_state)
+            self.updated.emit()
         except KeyError:
             raise KeyError(f'State {local_state} not found')
 
@@ -395,10 +409,12 @@ class Automata:
 
         return Automata(self.__alphabet, new_states, new_initial_state, new_final_states, list(new_transitions))
 
-    def view(self):
-        f = Digraph('Test', filename=f'../diagrams/automate{time.time()}', format='svg')
-        f.attr(label=self.name)
-        f.attr(label=f'Type: {self.check_type()}')
+    def view(self, **kwargs):
+        kwargs.setdefault('filename', f'../diagrams/automate{time.time()}')
+        kwargs.setdefault('format', f'svg')
+
+        f = Digraph('Test', filename=kwargs['filename'], format=kwargs['format'])
+        f.attr(label=f'Type: \n {self.check_type()}')
         f.attr(rankdir='LR', size='15,5')
         f.attr('node', shape='none', height='0', width='0')
         f.node('')
@@ -410,6 +426,12 @@ class Automata:
         for t in self.__transitions:
             f.edge(t.get_from().to_string(), t.get_to().to_string(), label=t.get_on())
         return f.view()
+
+    def temp_view(self):
+        return self.view(filename='../diagrams/temp', format='png')
+
+    def save_view(self, filename, _format):
+        return self.view(filename=filename, format=_format)
 
 
 """
@@ -530,6 +552,6 @@ if __name__ == '__main__':
                              ('q5', 'b', 'q5')
                          ]
                          )
-    automata8.view('AFD')
-    automata8.minimize().view('Min AFD')
+    automata8.view()
+    automata8.minimize().view()
     four_min = automata4.minimize()

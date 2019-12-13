@@ -72,7 +72,6 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.statusBar().showMessage('Prêt')
-        self.resize(400, 400)
         self.setCentralWidget(self.stack)
 
     def register_pages(self):

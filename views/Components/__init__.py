@@ -6,4 +6,5 @@ from .AddInitialState import HAddInitialState
 from .AddState import HAddState
 from .AddTransition import HAddTransition
 from .ErrorDialog import HErrorDialog
-from .TopMenu import TopMenu, HToolBar
+from .TransitionTable import HTransitionTable
+# from .TopMenu import TopMenu, HToolBar

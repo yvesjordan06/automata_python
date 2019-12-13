@@ -6,19 +6,40 @@ from models.Automata import Automata, example
 class HAddInitialState(QWidget):
     def __init__(self, automata: Automata = example):
         super().__init__()
-        layout = QGridLayout()
-        label = QLabel('Initial State')
-        label.setMaximumWidth(100)
-        addButton = QPushButton('Set Initial State')
-        addButton.setMaximumWidth(160)
-        states = QComboBox()
-        states.addItems(sorted(automata.get_states_string()))
-        states.setLineEdit(QLineEdit())
-        states.setMinimumWidth(200)
-        layout.addWidget(label, 0, 0)
-        layout.addWidget(states, 0, 1)
-        layout.addWidget(addButton, 0, 2)
-        self.setLayout(layout)
+        self.automata = automata
+        self.automata.updated.connect(self.refresh)
+        self._states = automata.get_states_string
+        self.layout = QGridLayout()
+        self.label = QLabel('Initial State')
+        self.addButton = QPushButton('Set')
+        self.addButton.setFixedWidth(100)
+        self.addButton.clicked.connect(self.add_state)
+        self.states = QComboBox()
+        self.states.addItems(self._states())
+        self.states.setLineEdit(QLineEdit())
+        self.layout.addWidget(self.label, 0, 0)
+        self.layout.addWidget(self.states, 1, 0)
+        self.layout.addWidget(self.addButton, 1, 1)
+        self.setLayout(self.layout)
+
+    def refresh(self):
+        if self.automata.get_initial_state_string():
+            self.states.setEditable(False)
+            self.addButton.setEnabled(False)
+        else:
+            self.states.setEditable(True)
+            self.addButton.setEnabled(True)
+        _state = self.states.currentText()
+        self.states.clear()
+        self.states.addItems(sorted(self._states()))
+        self.states.setCurrentText(_state)
+
+    def add_state(self, *args):
+        value = self.states.currentText()
+        if value:
+            self.automata.set_initial_state(value)
+            self.refresh()
+            self.states.setFocus()
 
 
 if __name__ == '__main__':
