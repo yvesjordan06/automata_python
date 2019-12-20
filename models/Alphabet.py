@@ -12,6 +12,11 @@ class Alphabet:
             raise TypeError(f'type str expected got {type(symbol)}')
         self.__alphabet.add(str(symbol))
 
+    def update(self, s):
+        if not isinstance(s, Alphabet):
+            raise TypeError('Alphabet expected')
+        self.__alphabet.update(s.get_alphabet())
+
     def remove_symbol(self, symbol):
         if not isinstance(symbol, (str, int)):
             raise TypeError(f'type str expected got {type(symbol)}')
@@ -41,6 +46,7 @@ class Alphabet:
                 False
         """
         return str(symbol) in self.__alphabet
+
     def get_alphabet(self):
         # Retourne l'aphabet
         return self.__alphabet
@@ -79,6 +85,4 @@ class Alphabet:
         elif len == 1:
             return self.__alphabet
         else:
-            return {symbol+word for symbol in self.__alphabet for word in self.word_list(len-1)}
-
-
+            return {symbol + word for symbol in self.__alphabet for word in self.word_list(len - 1)}

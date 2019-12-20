@@ -24,6 +24,7 @@ def convert_set_of_state_to_state(set_states: set):
 
 class Automata(QObject):
     updated = pyqtSignal()
+    statecount = 0
 
     def __init__(self, alphabet=None, states=None, initial_state=None, final_states=None,
                  transitions=None, **kwargs):
@@ -64,6 +65,96 @@ class Automata(QObject):
                     self.add_transition(trans)
             else:
                 self.add_transition(transitions)
+
+    def link_close(self):
+        if len(self.__initial_state) == 1:
+            start = State({''.join(self.__initial_state) + '0'})
+            end = State({'f' + ''.join(list(self.__final_states)[-1])})
+            actual_start = self.__initial_state.copy()
+            actual_end = list(self.__final_states)[-1].copy()
+            self.__states.add(start)
+            self.__states.add(end)
+            self.__initial_state = start
+            self.__final_states = {end}
+            firstTrans = Transition(start, '', actual_start)
+            linkTrans = Transition(start, '', end)
+            loopTrans = Transition(actual_end, '', actual_start)
+            endTrans = Transition(actual_end, '', end)
+            self.add_transition(firstTrans)
+            self.add_transition(loopTrans)
+            self.add_transition(endTrans)
+            self.add_transition(linkTrans)
+
+        else:
+            print('Impossible sur l\'automate')
+        return self
+
+    def iter(self, value: str):
+        self.__alphabet.add_symbol(str(value))
+        if self.__initial_state is None or len(self.__final_states) == 0:
+            self.__initial_state = State({f'i{self.statecount}'})
+            self.__final_states = [State({f'f{self.statecount}'})]
+            self.__states.add(State({f'i{self.statecount}'}))
+            self.__states.add(State({f'f{self.statecount}'}))
+            trans = Transition(self.__initial_state, str(value), list(self.__final_states)[-1])
+            self.add_transition(trans)
+            Automata.statecount += 1
+
+        else:
+            s = State({f'S{self.statecount}'})
+            final = list(self.__final_states)[-1]
+            self.__states.add(s)
+            trans = Transition(final, str(value), s)
+            self.__final_states = [s]
+            self.add_transition(trans)
+        return self
+
+    def iter_with_automata(self, value):
+        value_final = value.get_final_states()[-1]
+        value_initial = value.get_initial_state()
+        actual_final = list(self.__final_states)[-1]
+        self.__final_states = [value_final]
+        self.__states.update(value.get_states())
+        self.__alphabet.update(value.get_alphabet())
+        self.__transitions.update(value.get_transitions())
+        print(value.get_states())
+        print(self.__states)
+        trans = Transition(actual_final, '', value_initial)
+        self.add_transition(trans)
+        return self
+
+    def union_with_automata(self, value):
+        value_final = value.get_final_states()[-1]
+        value_initial = value.get_initial_state()
+        actual_final = list(self.__final_states)[-1]
+        self.__states.update(value.get_states())
+        self.__transitions.update(value.get_transitions())
+        self.__alphabet.update(value.get_alphabet())
+        print(value.get_states())
+        print(self.__states)
+        start = Transition(self.get_initial_state(), '', value_initial)
+        end = Transition(value_final, '', actual_final)
+        self.add_transition(start)
+        self.add_transition(end)
+        return self
+
+    def union(self, value: str):
+        self.__alphabet.add_symbol(str(value))
+
+        if self.__initial_state is None or len(self.__final_states) == 0:
+            self.__initial_state = State({f'i{self.statecount}'})
+            self.__final_states = [State({f'f{self.statecount}'})]
+            self.__states.add(State({f'i{self.statecount}'}))
+            self.__states.add(State({f'f{self.statecount}'}))
+            trans = Transition(self.__initial_state, str(value), list(self.__final_states)[-1])
+            self.add_transition(trans)
+            Automata.statecount += 1
+        else:
+            initial = self.__initial_state
+            final = list(self.__final_states)[-1]
+            trans = Transition(initial, str(value), final)
+            self.add_transition(trans)
+        return self
 
     def get_alphabet(self):
         return self.__alphabet
@@ -411,7 +502,7 @@ class Automata(QObject):
 
     def view(self, **kwargs):
         kwargs.setdefault('filename', f'../diagrams/automate{time.time()}')
-        kwargs.setdefault('format', f'svg')
+        kwargs.setdefault('format', f'png')
 
         f = Digraph('Test', filename=kwargs['filename'], format=kwargs['format'])
         f.attr(label=f'Type: \n {self.check_type()}')
@@ -552,6 +643,6 @@ if __name__ == '__main__':
                              ('q5', 'b', 'q5')
                          ]
                          )
-    automata8.view()
-    automata8.minimize().view()
+    # automata8.view()
+    # automata8.minimize().view()
     four_min = automata4.minimize()
