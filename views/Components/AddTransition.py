@@ -8,7 +8,7 @@ from models.Transition import Transition
 class HAddTransition(QWidget):
     def __init__(self, automata: Automata = example):
         self.automata = automata
-        self.alphabet = automata.get_alphabet().get_alphabet
+        self.alphabet = automata.get_alphabet
         self.states = automata.get_states_string
         self.automata.updated.connect(self.refresh)
         super().__init__()
@@ -46,7 +46,7 @@ class HAddTransition(QWidget):
         self.end.clear()
         self.start.addItems(sorted(self.states()))
         self.end.addItems(sorted(self.states()))
-        self.on.addItems(sorted(self.alphabet()))
+        self.on.addItems(sorted(self.alphabet().get_alphabet()))
         self.start.setCurrentText(_start)
         self.on.setCurrentText(_on)
         self.end.setCurrentText(_end)

@@ -35,7 +35,7 @@ class RegularExpression:
         try:
             for i in range(len(exp)):
                 result.append(exp[i])
-                if exp[i] not in self.mutual_operators and exp[i + 1] not in self.mutual_operators:
+                if exp[i] not in self.mutual_operators and exp[i + 1] not in [*self.mutual_operators, *self.uni_operators]:
                     result.append('.')
         except IndexError:
             print(result)
@@ -96,7 +96,7 @@ class RegularExpression:
                         currentexp = currentexp + value
                         continue
 
-                if value in self.mutual_operators or value in self.uni_operators:
+                if value in [*self.mutual_operators, *self.uni_operators]:
                     if value == '.':
                         res = solvedtemp or Automata().iter(self.expression[:i])
                         return res.iter_with_automata(RegularExpression(self.expression[i + 1:]).Solve())

@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from graphviz import Digraph
 
 from models.Alphabet import Alphabet
+
 from models.State import State
 from models.Transition import Transition
 
@@ -109,6 +110,10 @@ class Automata(QObject):
             self.add_transition(trans)
         return self
 
+    def make(self, value):
+        self.__dict__.update(value.__dict__)
+        self.updated.emit()
+
     def iter_with_automata(self, value):
         value_final = value.get_final_states()[-1]
         value_initial = value.get_initial_state()
@@ -168,6 +173,9 @@ class Automata(QObject):
 
     def get_states(self):
         return self.__states
+
+    def reset(self):
+        self.make(Automata())
 
     def get_states_string(self):
         string = set()

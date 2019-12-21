@@ -77,6 +77,7 @@ class MainWindow(QMainWindow):
     def register_pages(self):
         for name, page in self.AppPages.items():
             self.stack.addWidget(page)
+        self.stack.setCurrentWidget(self.AppPages['new'])
 
     def change_page(self, page):
         try:
