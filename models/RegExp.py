@@ -118,5 +118,6 @@ class RegularExpression:
 
 if __name__ == '__main__':
     print('running ...')
-    a = RegularExpression('(ab)|((ac)|b)')
+    a = RegularExpression('aa')
     b = a.Solve()
+    c = b.convert_to_dfa()

@@ -354,30 +354,33 @@ class Automata(QObject):
             return False
 
     def epsilon_closure(self, _state) -> set:
+        print('got state ',_state)
         state = set()
         closure = list()
         verified_closure = list()
-        if isinstance(state, (str, int)):
+        if isinstance(_state, (str, int)):
             state = State(str(_state))
         else:
             state = State(_state)
         closure.append(state)
+        print('closure : ',closure)
         for iter_state in closure:
             if iter_state in verified_closure:
                 continue
             else:
-                read = list()
+                _read = list()
                 try:
+                    print('iter state : ',iter_state)
                     _read = self.read(iter_state, '')
-                    read = set()
+                    """read = set()
 
                     for x in _read:
-                        read.update(x)
+                        read.update(x)"""
                 except Exception as error:
                     print("line 153", error)
-                if read:
-                    closure.append(State(read))
-            verified_closure.append(State(iter_state))
+                if _read:
+                    closure.extend(_read)
+            verified_closure.append(iter_state)
         return set(verified_closure)
 
     def check_type(self) -> str:
@@ -413,11 +416,16 @@ class Automata(QObject):
                 if state in verified_state:
                     continue
                 for symbol in self.__alphabet.get_alphabet():
+                    if symbol == '':
+                        continue
                     try:
                         actual_state = self.read(state, symbol)
                     except:
                         actual_state = set()
                     _actual_state = State({''.join(final) for final in actual_state})
+                    print('This is Actual : ',_actual_state)
+                    if len(_actual_state) == 0:
+                        _actual_state = State({'BIN'})
                     states.append(_actual_state)
                     actual_transition = Transition(state, symbol, _actual_state)
                     transitions.add(actual_transition)
@@ -427,8 +435,34 @@ class Automata(QObject):
                     for f_state in self.__final_states:
                         if f_state.intersection(x_state):
                             new_final_states.add(x_state)
+            return Automata(self.__alphabet, verified_state, self.__initial_state, new_final_states, list(transitions))
 
-        return Automata(self.__alphabet, verified_state, self.__initial_state, new_final_states, list(transitions))
+        else:
+            for state in self.__states:
+                closure = self.epsilon_closure(state)
+                print('Stat closure :',closure)
+                if closure.intersection(self.__final_states):
+                    new_final_states.add(state)
+                result_states = list()
+                to_state = list()
+                for symbol in self.__alphabet.get_alphabet():
+                    if symbol == '':
+                        continue
+                    for i_state in closure:
+                        result_states.extend(self.read(i_state, symbol))
+                    for i_result in result_states:
+                        i_closure = self.epsilon_closure(i_result)
+                        if i_closure.intersection(self.__final_states):
+                            new_final_states.add(i_result)
+                        to_state.extend(i_closure)
+                    for end in to_state:
+                        trans = Transition(state, symbol, end)
+                        transitions.add(trans)
+            return Automata(self.__alphabet, self.__states, self.__initial_state, new_final_states, list(transitions))
+
+
+
+
 
     def minimize(self):
         if self.check_type() != Type.DFA:

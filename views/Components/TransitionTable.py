@@ -12,7 +12,9 @@ class HTransitionTable(QTableWidget):
         self.alphabet = automata.get_alphabet
         self.states = automata.get_states_string
         self.transitions = automata.get_transitions
+
         super().__init__(len(self.states()), len(self.alphabet()))
+        self.setMinimumHeight(200)
 
         automata.updated.connect(self.refresh)
         self.refresh()

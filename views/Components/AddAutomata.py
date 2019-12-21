@@ -20,7 +20,8 @@ class HAddAutomata(QWidget):
         layout.addWidget(Components.HAddFinalState(automata))
         layout.addWidget(Components.HAddTransition(automata))
         layout.addWidget(HRegexInput(automata))
-        self.setMaximumHeight(600)
+        # self.setMaximumHeight(600)
+        #self.setMinimumWidth(300)
         self.setLayout(layout)
 
 
@@ -49,8 +50,8 @@ class HRegexInput(QWidget):
             print('alphabet')
             print(temp.get_alphabet().get_alphabet())
             self.automata.make(temp)
-            self.line_edit.clear()
-            self.line_edit.setFocus()
+            #self.line_edit.clear()
+            #self.line_edit.setFocus()
 
             # print(self.automata.get_alphabet().get_alphabet())
 

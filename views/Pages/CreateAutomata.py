@@ -20,9 +20,9 @@ class HCreateAutomata(QDialog):
 
         button = QPushButton('View')
         button.clicked.connect(lambda: automata.view())
-        layout.addWidget(HTransitionTable(automata), 1, 0, 3, 3)
-        layout.addWidget(HAutomataDetail(automata), 0, 2)
-        self.setMinimumWidth(400)
+        layout.addWidget(HTransitionTable(automata), 1, 0, 4, 5)
+        layout.addWidget(HAutomataDetail(automata), 0, 2, 1, 3)
+        self.setMinimumWidth(800)
         self.setLayout(layout)
 
 
@@ -34,7 +34,8 @@ class HAutomataDetail(QWidget):
         self.automata = _automata
         self.automata.updated.connect(self.refresh)
         self.text = QLabel()
-        self.text.setText(automata.check_type())
+        self.text.setText('Please Create a new Automata on the left screen')
+        self.text.setStyleSheet('font-weight: bold; font-size: 24px')
         self.text1 = QLabel()
         self.text1.setText(f'Nombre Etats: {len(automata.get_states())}')
         self.text2 = QLabel()
@@ -65,6 +66,7 @@ class HAutomataDetail(QWidget):
         convert.clicked.connect(lambda: automata.make(automata.convert_to_dfa()))
         buttonReset = QPushButton('Reset')
         buttonReset.clicked.connect(lambda: automata.reset())
+        self.layout.addWidget(HSearchWord(automata))
         self.layout.addWidget(button)
         # self.layout.addLayout(temp)
         # self.layout.addWidget(temp, alignment=Qt.AlignCenter)
@@ -105,6 +107,33 @@ class HAutomataDetail(QWidget):
         if self.state_index > 0:
             self.state_index -= 1
             self.automata.make(self.states[self.state_index])
+
+class HSearchWord(QWidget):
+    def __init__(self, automata):
+        super().__init__()
+        self.automata = automata
+        layout = QGridLayout()
+        label = QLabel('Search a word')
+        addButton = QPushButton('Search')
+        #addButton.setFixedWidth(100)
+        addButton.clicked.connect(self.search_word)
+        self.line_edit = QLineEdit()
+        self.line_edit.setPlaceholderText('Search term')
+        self.line_edit.returnPressed.connect(self.search_word)
+        self.label2 = QLabel()
+        layout.addWidget(label, 0, 0)
+        layout.addWidget(self.line_edit, 1, 0)
+        layout.addWidget(addButton, 1, 1)
+        layout.addWidget(self.label2, 2, 0, 2, 2)
+        self.setLayout(layout)
+
+    def search_word(self):
+        value = self.line_edit.text()
+        if not value:
+            self.label2.setText('No word entered')
+        else:
+            self.label2.setText(f'{value} is known in current automata' if self.automata.minimize().knows_word(value) else f'{value} is not a known word in current automata')
+
 
 
 if __name__ == '__main__':
